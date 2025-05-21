@@ -1,19 +1,23 @@
 // config/db.js
-const mysql = require('mysql2');
+require('dotenv').config(); // Load environment variables from .env
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',         // Use your own MySQL password
-  database: 'shesmart_db'
+const { Pool } = require('pg');
+
+// Create PostgreSQL pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,  // Needed for Render and some cloud DBs
+  },
 });
 
-connection.connect((err) => {
+// Test connection
+pool.connect((err, client, release) => {
   if (err) {
-    console.error('MySQL Connection Failed:', err);
-  } else {
-    console.log('✅ Connected to MySQL Database');
+    return console.error('❌ PostgreSQL Connection Failed:', err.stack);
   }
+  console.log('✅ Connected to PostgreSQL Database');
+  release();
 });
 
-module.exports = connection;
+module.exports = pool;
